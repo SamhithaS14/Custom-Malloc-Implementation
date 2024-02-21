@@ -44,10 +44,12 @@ Within mymalloc():
 - function takes in ptrs to head and end, and goes through while loop checking chunkSize and allocation
     -> if size requested isn't avaliable in the heap, 
         fprintf(stderr, "Insufficient memory space requested (%ld bytes) in File: '%s', Function: 'malloc()', on Line: '%d'\n", size, file, line);
-        where the file name, function name, and line are printed along with the error
+        where the file name, function name, and line are printed along with the insufficient space requested
 
 Within myfree():
-- checks if ptr argument is within bounds, in order to be able to free
+- checks if ptr argument is within bounds, in order to be able to free it, if not 
+    -> fprintf(stderr, "Pointer %p given out of bound in File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
+       where the file name, function name, and line are printed along with the error
 
 ------------------------------------------- File Name: memgrind.c -------------------------------------------
 Our Extra Stress Tests (besides the tests given):

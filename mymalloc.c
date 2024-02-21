@@ -107,7 +107,7 @@ void myfree(void *ptr, char *file, int line){
 
     //check if pointer is valid to start
     if(ptr==NULL || (char*)ptr<head || (char*)ptr>end) {
-        fprintf(stderr, "Pointer %p given out of bound in File: '%s' on Line: '%d'\n", ptr, file, line);
+        fprintf(stderr, "Pointer %p given out of bound in File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
         return;
     }
 
