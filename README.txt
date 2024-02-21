@@ -49,7 +49,13 @@ Within mymalloc():
 Within myfree():
 - checks if ptr argument is within bounds, in order to be able to free it, if not 
     -> fprintf(stderr, "Pointer %p given out of bound in File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
-       where the file name, function name, and line are printed along with the error
+       where the file name, function name, and line are printed along with the out of bounds ptr
+- if the ptr user wants to free is not in the heap, that also results in an error, as there exists nothing to free
+    -> fprintf(stderr, "Pointer: (%p) not in heap! File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
+       where the file name, function name, and line are printed along with the ptr that cannot be found in the heap
+
+Within memClean():
+- 
 
 ------------------------------------------- File Name: memgrind.c -------------------------------------------
 Our Extra Stress Tests (besides the tests given):
