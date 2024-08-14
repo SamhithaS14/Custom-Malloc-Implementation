@@ -44,24 +44,20 @@ void test3() {
     if(DEBUG)   printf("Starting test 3!\n");
     char* ptrArray[120]; //Array to store 120 pointers
     int numAlloc = 0; //track num of alloc
-    
-    while (numAlloc != 120) { //run till we allocated 120 times
+    while (numAlloc < 120) { //run till we allocated 120 times
         int randNum = (rand() % 2);  //random number
         
-        if (randNum == 0) { 
+        if (numAlloc == 0 || randNum == 0) { 
             ptrArray[numAlloc] = malloc(1); //allocate
             numAlloc++; 
         
         } else {
-            
-            if (numAlloc > 0) { //free
-                free(ptrArray[numAlloc - 1]); 
-                numAlloc--;
-            }
+            numAlloc--;
+            free(ptrArray[numAlloc]); 
         }
     }
    
-    for (int i=0; i < 120; i++) { //clean up array
+    for (int i=0; i < numAlloc; i++) { //clean up array
         free(ptrArray[i]);
     }
 

@@ -53,11 +53,16 @@ void merge(char* ptr, char* ptr2) {
 void *mymalloc(size_t size, char *file, int line){
 
     if(size <= 0) {
-        printf("Error: Can't allocate 0 bytes");
+        fprintf(stderr, "Error: Can't allocate 0 bytes in File: '%s', Function: 'mymalloc()', on Line: '%d'\n", file, line);
         return NULL;
     }
     //Round size to 8 bytes
     size = (size+7) & ~7;
+
+    if(size > MEMLENGTH*8) { //Change: Check for size if requested above max!
+        fprintf(stderr, "Error: Insufficient memory space requested (%ld bytes) in File: '%s', Function: 'mymalloc()', on Line: '%d'\n", size, file, line);
+        return NULL;
+    }
 
     char* ret = NULL;
     char* head = ((char*)memory)+8;
@@ -97,7 +102,7 @@ void *mymalloc(size_t size, char *file, int line){
     }
 
 
-    fprintf(stderr, "Insufficient memory space requested (%ld bytes) in File: '%s', Function: 'mymalloc()', on Line: '%d'\n", size, file, line);
+    fprintf(stderr, "Error: Insufficient memory space requested (%ld bytes) in File: '%s', Function: 'mymalloc()', on Line: '%d'\n", size, file, line);
     return 0;
 }
 void myfree(void *ptr, char *file, int line){
@@ -107,22 +112,29 @@ void myfree(void *ptr, char *file, int line){
 
     //check if pointer is valid to start
     if(ptr==NULL || (char*)ptr<head || (char*)ptr>end) {
-        fprintf(stderr, "Pointer %p given out of bound in File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
+        fprintf(stderr, "Error: Pointer (%p) given out of bound in File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
+        return;
+    }
+
+    if(getAlloc(ptr) == 0) { //Check if given pointer is already freed
+        fprintf(stderr, "Error: Pointer (%p) is already freed! (Double-free) in File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
         return;
     }
 
     while(head < end) {
         //check for merging
         int headChunk = getChunkSize(head);
-        if (DEBUG)  printf("head is size: %d, status %d, ptr is size: %d, status: %d\n", getChunkSize(head), getAlloc(head), getChunkSize(ptr), getAlloc(ptr));
+        if(DEBUG)   printf("head is size: %d, status %d, ptr is size: %d, status: %d\n", getChunkSize(head), getAlloc(head), getChunkSize(ptr), getAlloc(ptr));
         if(isNextFree(head, ptr)) {
             //merge
             //int ptrChunk = getChunkSize(ptr);
             merge(head, ptr);
             //get the next block of pointer and compare
             headChunk = getChunkSize(head);
-            if(getAlloc(head+headChunk+8)==0) {
-                merge(head, head+headChunk+8);
+            if(head + headChunk + 8 < end) {
+                if(getAlloc(head+headChunk+8)==0) {
+                    merge(head, head+headChunk+8);
+                }
             }
             if(DEBUG)   printf("Freeing at head %p\n", head);
             //u need to make the pointer invalid
@@ -132,23 +144,30 @@ void myfree(void *ptr, char *file, int line){
         } else if(head == ptr) {
             //we found the target pointer
             if(DEBUG)   printf("Head: %p equal to Ptr: %p\n", head, ptr);
+            
             int ptrChunk = getChunkSize(ptr);
-            if(getAlloc(ptr+ptrChunk+8)==0) {
-                //merge if next one free
-                merge(ptr, ptr+ptrChunk+8);
+            if(head + headChunk + 8 < end) { //Change: Before checking next chunk - Check if one exists (at the end)
+                if(getAlloc(ptr+ptrChunk+8)==0) {
+                    //merge if next one free
+                    merge(ptr, ptr+ptrChunk+8);
+                }
             }
+            
             //mark free
             setAlloc(ptr, 0);
             if(DEBUG)   printf("Freeing at%p\n", ptr);
             return;
 
-        } else if(head+headChunk+8 < end) {
+        } else if(head+headChunk+8 < end) { 
             //iterate to find
             if(DEBUG)   printf("Iterating\n");
             head+=headChunk+8;
+
+        } else { // Change: IThrew the error into 'else' condition as I forgot earlier
+            fprintf(stderr, "Pointer: (%p) not in heap! File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
+            return;
         }
     }
-
     fprintf(stderr, "Pointer: (%p) not in heap! File: '%s', Function: 'myfree()', on Line: '%d'\n", ptr, file, line);
     return;
 }
