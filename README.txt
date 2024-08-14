@@ -1,5 +1,5 @@
-Names and NetIDs:   Krithish Ayyappan          ka759
-                    Samhitha Sangaraju         ss4043
+Names and NetIDs:   Krithish Ayyappan          
+                    Samhitha Sangaraju         
 
 
 ------------------------------------------- File Name: mymalloc.c -------------------------------------------
